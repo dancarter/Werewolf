@@ -1,16 +1,16 @@
 require 'socket'
-#require_relative 'engine'
-#require_relative 'player'
+require_relative 'engine'
 
 server = TCPServer.open(2000)
 
 puts "Initialized: #{server}"
 
-#engine = Engine.new
+engine = Engine.new
 
 loop {
   client = server.accept
   puts "Established Connection: #{client}"
-  client.puts('Welcome to Werewolf!')
+  engine.add_player(client)
+  client.puts('Hello')
   client.close
 }
