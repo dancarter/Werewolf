@@ -1,12 +1,15 @@
+require 'socket'
+
 class Engine
   attr_reader :players, :day, :game_over
 
-  def initialize
+  def initialize(server)
     @players = []
     @day = false
     @game_over = false
     @cops = 0
     @killers = 0
+    @server = server
   end
 
   def generate_player_id
@@ -32,6 +35,7 @@ class Engine
 
   def add_player(player)
     @players << [player,generate_player_id,generate_player_role,true]
+    player.puts 'Added to game'
   end
 
   def is_game_over?
@@ -47,7 +51,7 @@ class Engine
         if player[2] == role && player[3] == true
           #People of role collude to chose victim, set victim variable to that players id
         else
-          #People not of role receive the message
+          #server.send("player[1].puts")
         end
       end
     end
