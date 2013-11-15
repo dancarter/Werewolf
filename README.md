@@ -2,7 +2,7 @@ Werewolf
 ========
 
 
-Comand line game based on the card game Mafia.
+Command line game based on the card game Mafia.
 
 Server is run on local network and clients connect through the servers IP on the local network.
 
