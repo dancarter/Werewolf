@@ -9,6 +9,14 @@ puts server.addr.inspect
 
 engine = Engine.new(self)
 
+server_message_listener = Thread.new do
+  while line = gets.chomp
+    clients.each do |client|
+      client.puts "SERVER MESSAGE: " + line
+    end
+  end
+end
+
 loop {
   Thread.start(server.accept) do |client|
     client.puts "Connected \n
@@ -17,9 +25,14 @@ loop {
     clients << client
     engine.add_player(client)
     puts "New connection: #{client}"
+    clients.each do |connected_client|
+      connected_client.puts "Currently #{clients.length} player(s) are connected."
+    end
   end
 
   sleep(1)
+
+  server_message_listener.run
 
   if clients.length == 8
     puts engine.players
