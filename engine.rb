@@ -1,15 +1,15 @@
 require 'socket'
 
 class Engine
-  attr_reader :players, :day, :game_over
+  attr_reader :players
 
   def initialize(server)
     @players = {}
-    @day = false
     @game_over = false
     @cops = 0
     @killers = 0
     @server = server
+    @available_roles = ['cop','cop','killer','killer','innocent','innocent','innocent','innocent'].shuffle
   end
 
   def generate_player_id
@@ -20,24 +20,14 @@ class Engine
     highest_id
   end
 
-  def generate_player_role
-    role = nil
-    role = 'killer' if @players.length == 4 and @killers < 1
-    role = 'cop' if @players.length == 4 and @cops < 1
-    return role if role
-    while !role
-      num = (Random.rand(3)) + 1
-      role = 'cop' if num == 1 and @cops < 2
-      role = 'killer' if num == 2 and @killers < 2
-      role = 'innocent' if !role
-    end
-    role
+  def assign_player_role
+    @available_roles.shift
   end
 
   def add_player(player)
-    role = generate_player_role
+    role = assign_player_role
     @players[generate_player_id] = [player,role,true]
-    player.puts "Added to game. Your role: #{generate_player_role}"
+    player.puts "Added to game. Your role: #{role}"
   end
 
   def is_game_over?
@@ -52,6 +42,19 @@ class Engine
     true
   end
 
+  def message_all(message)
+    @players.each_key do |key|
+      @players[key][0].puts message
+    end
+  end
+
+  def murder_player(dead_player)
+    @players[dead_player][0].puts "You have been killed."
+    @players[dead_player][2] = false
+    @cops -= 1 if @players[dead_player][1] == 'cop'
+    @killers -= 1 if @players[dead_player][1] == 'killer'
+  end
+
   def town_killing(votes)
     most_votes = 0
     murdered_player = 0
@@ -61,44 +64,34 @@ class Engine
         murdered_player = elem
       end
     end
-    @players.each_key do |key|
-      @players[key][0].puts "Player #{murdered_player} has been lynched by the mob."
-    end
-    @players[murdered_player][2] = false
-    @cops -= 1 if @players[murdered_player][1] == 'cop'
-    @killers -= 1 if @players[murdered_player][1] == 'killer'
+    murder_player(murdered_player)
+    message_all("Player #{murdered_player} has been lynched by the mob.")
   end
 
-  def collude(role,message)
-    abort if is_game_over?
-    victim_1, victim_2, victim = 0, 0, 0
+  def collude(role, message)
+    vic = 0
     collusion_complete = false
     while !collusion_complete
       @players.each_key do |key|
-        if player[key][1] == role && player[key][2] == true
-          #People of role collude to choose victim, set victim variable to that players id
-          vic = nil
-          while !good_input(vic)
-            player[key][0].puts "#{role.capitalize}, who do you choose? (enter player #): "
-            vic = player[key][0].gets
+          if @players[key][1] == role and @players[key][2]
+            vic_2 = 0
+            while !good_input?(vic_2)
+              @players[key][0].puts "#{role.capitalize}, who do you choose?" if vic == 0
+              @players[key][0].puts "#{role.capitalize}, your associate chose #{vic}, who will you choose?" if vic != 0
+              vic_2 = @players[key][0].gets.chomp
+            end
+            collusion_complete = true if vic_2 == vic
+            vic = vic_2
+          else
+            @players[key][0].puts message
           end
-          victim_2 = vic if victim_1 != 0
-          victim_1 = vic unless victim_1 != 0
-        else
-          player[key][0].puts message
-        end
-      end
-      if victim_1 != 0 and victim_2 != 0 and victim_2 != victim_1
-        @players.each_key {|key| @players[key][0].puts "A decision has not been made."}
-      else
-        collusion_complete = true
-        victim = victim_1
       end
     end
-    victim
+    vic
   end
 
   def day
+    message_all("The sun shines on a new day.")
     @players.each_key do |key|
       #each living player makes statement
       msg = nil
@@ -130,20 +123,16 @@ class Engine
       votes << vote.to_i unless !@players[key][2]
     end
     town_killing(votes) #array of each persons votes goes to town_killing method and player with most votes dies
-    @day = false
   end
 
   def night
-    abort if is_game_over?
+    message_all("The darkness of night has fallen. Beware.")
     victim_killed = collude('killer',"Killers are lurking about.")
     suspect_fingered = collude('cop',"The cops are investigating.")
-    @players[victim_killed][2] = false
-    ops -= 1 if @players[victim_killed][1] == 'cop'
-    killers -= 1 if @players[victim_killed][1] == 'killer'
+    murder_player(victim_killed.to_i)
+    message_all("Player #{victim_killed} has been murdered.")
     @players.each_key do |key|
-      @players[key][0].puts "#{victim_killed} has been murdered."
-      @players[key][0].puts "#{suspect_fingered} is a/an #{@players[suspect_fingered][2]}." unless @players[key][2] != 'cop'
+      @players[key][0].puts "Player #{suspect_fingered} is a/an #{@players[suspect_fingered.to_i][1]}." if @players[key][1] == 'cop' and @players[key][2]
     end
-    @day = true
   end
 end

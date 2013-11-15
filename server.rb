@@ -1,10 +1,11 @@
 require 'socket'
 require_relative 'engine'
 
-server = TCPServer.open(2000)
+server = TCPServer.open(6666)
 clients = []
 
 puts "Initialized: #{server}"
+puts server.addr.inspect
 
 engine = Engine.new(self)
 
@@ -15,14 +16,13 @@ loop {
                 Game will proceed when eight players join."
     clients << client
     engine.add_player(client)
+    puts "New connection: #{client}"
   end
 
   sleep(1)
 
-  puts engine.players
-  puts clients.length
   if clients.length == 8
-    puts 'hi'
+    puts engine.players
     while true
       engine.day
       engine.night

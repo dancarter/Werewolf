@@ -1,9 +1,9 @@
 require 'socket'
 require 'thread'
 
-#puts "Enter IP of server(Warning! IP will not be verified): "
-hostname = 'localhost' #gets.chomp
-port = 2000
+puts "Enter IP of server(Warning! Input will not be verified): "
+hostname = gets.chomp
+port = 6666
 
 server = TCPSocket.open(hostname, port)
 
