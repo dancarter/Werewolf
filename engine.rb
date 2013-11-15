@@ -8,6 +8,7 @@ class Engine
     @game_over = false
     @cops = 0
     @killers = 0
+    @players_alive = 0
     @server = server
     @available_roles = ['cop','cop','killer','killer','innocent','innocent','innocent','innocent'].shuffle
   end
@@ -30,8 +31,15 @@ class Engine
     player.puts "Added to game. Your role: #{role}"
   end
 
-  def is_game_over?
-    true if @cops == 0 or @killers == 0
+  def game_won?
+    if @killers >= @players_alive
+      message_all("The killers have won!")
+      return true
+    elsif @killers == 0
+      message_all("The killers have been thwarted!")
+      return true
+    end
+    false
   end
 
   def good_input?(input)
@@ -53,6 +61,7 @@ class Engine
     @players[dead_player][2] = false
     @cops -= 1 if @players[dead_player][1] == 'cop'
     @killers -= 1 if @players[dead_player][1] == 'killer'
+    @players_alive -= 1
   end
 
   def town_killing(votes)
@@ -71,17 +80,20 @@ class Engine
   def collude(role, message)
     vic = 0
     collusion_complete = false
+    dead_associate = false
     while !collusion_complete
       @players.each_key do |key|
           if @players[key][1] == role and @players[key][2]
             vic_2 = 0
             while !good_input?(vic_2)
               @players[key][0].puts "#{role.capitalize}, who do you choose?" if vic == 0
-              @players[key][0].puts "#{role.capitalize}, your associate chose #{vic}, who will you choose?" if vic != 0
+              @players[key][0].puts "#{role.capitalize}, your associate chose #{vic}, who will you choose?" if vic != 0 and !dead_associate
               vic_2 = @players[key][0].gets.chomp
             end
             collusion_complete = true if vic_2 == vic
             vic = vic_2
+          elsif @players[key][1] == role
+            dead_associate = true
           else
             @players[key][0].puts message
           end
@@ -91,6 +103,7 @@ class Engine
   end
 
   def day
+    game_won?
     message_all("The sun shines on a new day.")
     @players.each_key do |key|
       #each living player makes statement
@@ -126,6 +139,7 @@ class Engine
   end
 
   def night
+    game_won?
     message_all("The darkness of night has fallen. Beware.")
     victim_killed = collude('killer',"Killers are lurking about.")
     suspect_fingered = collude('cop',"The cops are investigating.")

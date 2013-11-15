@@ -25,7 +25,9 @@ loop {
     puts engine.players
     while true
       engine.day
+      break if engine.game_won?
       engine.night
+      break if engine.game_won?
     end
   end
 
