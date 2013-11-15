@@ -17,9 +17,17 @@ loop {
     engine.add_player(client)
   end
 
-  if clients.length == 8
-    while true
+  sleep(1)
 
+  puts engine.players
+  puts clients.length
+  if clients.length == 8
+    puts 'hi'
+    while true
+      engine.day
+      engine.night
     end
   end
+
+  #clients.each {|client| client.close}
 }
