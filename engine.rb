@@ -6,11 +6,11 @@ class Engine
   def initialize(server)
     @players = {}
     @game_over = false
-    @cops = 0
-    @killers = 0
+    @hunters = 0
+    @werewolfs = 0
     @players_alive = 0
     @server = server
-    @available_roles = ['cop','cop','killer','killer','innocent','innocent','innocent','innocent'].shuffle
+    @available_roles = ['hunter','hunter','werewolf','werewolf','innocent','innocent','innocent','innocent'].shuffle
   end
 
   def generate_player_id
@@ -32,11 +32,11 @@ class Engine
   end
 
   def game_won?
-    if @killers >= @players_alive
-      message_all("The killers have won!")
+    if @werewolfs >= @players_alive
+      message_all("The werewolfs have won!")
       return true
-    elsif @killers == 0
-      message_all("The killers have been thwarted!")
+    elsif @werewolfs == 0
+      message_all("The werewolfs have been thwarted!")
       return true
     end
     false
@@ -59,8 +59,8 @@ class Engine
   def murder_player(dead_player)
     @players[dead_player][0].puts "You have been killed."
     @players[dead_player][2] = false
-    @cops -= 1 if @players[dead_player][1] == 'cop'
-    @killers -= 1 if @players[dead_player][1] == 'killer'
+    @hunters -= 1 if @players[dead_player][1] == 'hunter'
+    @werewolfs -= 1 if @players[dead_player][1] == 'werewolf'
     @players_alive -= 1
   end
 
@@ -125,7 +125,7 @@ class Engine
       vote = 0
       while !good_input?(vote)
         if @players[key][2]
-          @players[key][0].puts "Who is a killer? (Enter player #): "
+          @players[key][0].puts "Who is a werewolf? (Enter player #): "
           vote = @players[key][0].gets.chop
         else
           @players[key][0].puts "The dead don't vote."
@@ -139,12 +139,12 @@ class Engine
 
   def night
     message_all("The darkness of night has fallen. Beware.")
-    victim_killed = collude('killer',"Killers are lurking about.")
-    suspect_fingered = collude('cop',"The cops are investigating.")
+    victim_killed = collude('werewolf',"Werewolves are on the prowl.")
+    suspect_fingered = collude('hunter',"The hunters are investigating.")
     murder_player(victim_killed.to_i)
     message_all("Player #{victim_killed} has been murdered.")
     @players.each_key do |key|
-      @players[key][0].puts "Player #{suspect_fingered} is a/an #{@players[suspect_fingered.to_i][1]}." if @players[key][1] == 'cop' and @players[key][2]
+      @players[key][0].puts "Player #{suspect_fingered} is a/an #{@players[suspect_fingered.to_i][1]}." if @players[key][1] == 'hunter' and @players[key][2]
     end
   end
 end
