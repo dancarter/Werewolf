@@ -103,7 +103,6 @@ class Engine
   end
 
   def day
-    game_won?
     message_all("The sun shines on a new day.")
     @players.each_key do |key|
       #each living player makes statement
@@ -139,7 +138,6 @@ class Engine
   end
 
   def night
-    game_won?
     message_all("The darkness of night has fallen. Beware.")
     victim_killed = collude('killer',"Killers are lurking about.")
     suspect_fingered = collude('cop',"The cops are investigating.")
