@@ -35,8 +35,9 @@ class Engine
   end
 
   def add_player(player)
-    @players[generate_player_id] = [player,generate_player_role,true]
-    player.puts 'Added to game'
+    role = generate_player_role
+    @players[generate_player_id] = [player,role,true]
+    player.puts "Added to game. Your role: #{generate_player_role}"
   end
 
   def is_game_over?
@@ -61,11 +62,11 @@ class Engine
       end
     end
     @players.each_key do |key|
-      @players[key][0].puts "#{murdered_player} has been lynched by the mob."
+      @players[key][0].puts "Player #{murdered_player} has been lynched by the mob."
     end
     @players[murdered_player][2] = false
-    cops -= 1 if @players[murdered_player][1] == 'cop'
-    killers -= 1 if @players[murdered_player][1] == 'killer'
+    @cops -= 1 if @players[murdered_player][1] == 'cop'
+    @killers -= 1 if @players[murdered_player][1] == 'killer'
   end
 
   def collude(role,message)
@@ -120,13 +121,13 @@ class Engine
       while !good_input?(vote)
         if @players[key][2]
           @players[key][0].puts "Who is a killer? (Enter player #): "
-          vote = @players[key][0].gets
+          vote = @players[key][0].gets.chop
         else
           @players[key][0].puts "The dead don't vote."
           break
         end
       end
-      votes << vote unless !@players[key][2]
+      votes << vote.to_i unless !@players[key][2]
     end
     town_killing(votes) #array of each persons votes goes to town_killing method and player with most votes dies
     @day = false
