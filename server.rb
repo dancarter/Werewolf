@@ -26,7 +26,7 @@ loop {
     engine.add_player(client)
     puts "New connection: #{client}"
     clients.each do |connected_client|
-      connected_client.puts "Currently #{clients.length} player(s) are connected."
+      connected_client.puts "Currently #{clients.length} player(s) is/are connected."
     end
   end
 

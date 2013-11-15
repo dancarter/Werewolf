@@ -6,9 +6,9 @@ class Engine
   def initialize(server)
     @players = {}
     @game_over = false
-    @hunters = 0
-    @werewolfs = 0
-    @players_alive = 0
+    @hunters = 2
+    @werewolfs = 2
+    @players_alive = 8
     @server = server
     @available_roles = ['hunter','hunter','werewolf','werewolf','innocent','innocent','innocent','innocent'].shuffle
   end
@@ -33,7 +33,7 @@ class Engine
 
   def game_won?
     if @werewolfs >= @players_alive
-      message_all("The werewolfs have won!")
+      message_all("The werewolfs have won! #{@werewolfs} : #{@players_alive}")
       return true
     elsif @werewolfs == 0
       message_all("The werewolfs have been thwarted!")
