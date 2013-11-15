@@ -7,7 +7,7 @@ clients = []
 puts "Initialized: #{server}"
 puts server.addr.inspect
 
-engine = Engine.new
+engine = Engine.new(self)
 
 server_message_listener = Thread.new do
   while line = gets.chomp
@@ -32,10 +32,6 @@ loop {
 
   sleep(1)
 
-  clients.each do |client|
-    puts client.closed?
-  end
-
   server_message_listener.run
 
   if clients.length == 8
@@ -46,7 +42,7 @@ loop {
       engine.night
       break if engine.game_won?
     end
-    clients.each {|client| client.puts("Closing connection."); client.close}
   end
 
+  #clients.each {|client| client.close}
 }
