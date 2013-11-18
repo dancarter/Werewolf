@@ -9,7 +9,7 @@ puts server.addr.inspect
 
 engine = Engine.new(self)
 
-server_message_listener = Thread.new do
+server_message_listener = Thread.new do #Listens for messages entered in the server to be sent to all clients
   while line = gets.chomp
     clients.each do |client|
       client.puts "SERVER MESSAGE: " + line
@@ -18,7 +18,7 @@ server_message_listener = Thread.new do
 end
 
 loop {
-  Thread.start(server.accept) do |client|
+  Thread.start(server.accept) do |client|  #Checks for connections to the server
     client.puts "Connected \n
                 Welcome to Werewolf! \n
                 Game will proceed when eight players join."
@@ -32,9 +32,9 @@ loop {
 
   sleep(1)
 
-  server_message_listener.run
+  server_message_listener.run #Runs thread listening for server messages
 
-  if clients.length == 8
+  if clients.length == 8 #Check if eight players are connected and run the game
     puts engine.players
     while true
       engine.day
@@ -44,5 +44,4 @@ loop {
     end
   end
 
-  #clients.each {|client| client.close}
 }

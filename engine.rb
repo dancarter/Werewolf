@@ -13,7 +13,7 @@ class Engine
     @available_roles = ['hunter','hunter','werewolf','werewolf','innocent','innocent','innocent','innocent'].shuffle
   end
 
-  def generate_player_id
+  def generate_player_id  #Find the next available ID
     highest_id = 1
     players.each_key do |id|
       highest_id = id + 1 if id >= highest_id
@@ -21,17 +21,17 @@ class Engine
     highest_id
   end
 
-  def assign_player_role
+  def assign_player_role #Pull a role from the remaining roles
     @available_roles.shift
   end
 
-  def add_player(player)
+  def add_player(player)  #Generate an ID and role for new players being added to the game
     role = assign_player_role
     @players[generate_player_id] = [player,role,true]
     player.puts "Added to game. Your role: #{role}"
   end
 
-  def game_won?
+  def game_won? #Check if the game has ended and see who won
     if @werewolfs >= @players_alive
       message_all("The werewolfs have won! #{@werewolfs} : #{@players_alive}")
       return true
@@ -42,21 +42,21 @@ class Engine
     false
   end
 
-  def good_input?(input)
-    return false if input =~ /[a-zA-Z]/
+  def good_input?(input) #When taking allowing players to choose other players, make sure the ID provided is valid
+    return false if input =~ /[a-zA-z]|\W/
     input = input.to_i
     return false if input < 1 or input > 8
     return false if !@players[input][2]
     true
   end
 
-  def message_all(message)
+  def message_all(message) #Send a message to all players in the game
     @players.each_key do |key|
       @players[key][0].puts message
     end
   end
 
-  def murder_player(dead_player)
+  def murder_player(dead_player) #Kill off a player in the game
     @players[dead_player][0].puts "You have been killed."
     @players[dead_player][2] = false
     @hunters -= 1 if @players[dead_player][1] == 'hunter'
@@ -64,7 +64,7 @@ class Engine
     @players_alive -= 1
   end
 
-  def town_killing(votes)
+  def town_killing(votes) #Take votes from all living players and murder the player with the most votes
     most_votes = 0
     murdered_player = 0
     votes.uniq.each do |elem|
@@ -77,7 +77,7 @@ class Engine
     message_all("Player #{murdered_player} has been lynched by the mob.")
   end
 
-  def collude(role, message)
+  def collude(role, message) #Allow werewolves or hunters to decide who they will choose
     vic = 0
     collusion_complete = false
     dead_associate = false
@@ -102,7 +102,7 @@ class Engine
     vic
   end
 
-  def day
+  def day #Run the day turn of the game
     message_all("The sun shines on a new day.")
     @players.each_key do |key|
       #each living player makes statement
@@ -137,7 +137,7 @@ class Engine
     town_killing(votes) #array of each persons votes goes to town_killing method and player with most votes dies
   end
 
-  def night
+  def night #Run the night turn of the game
     message_all("The darkness of night has fallen. Beware.")
     victim_killed = collude('werewolf',"Werewolves are on the prowl.")
     suspect_fingered = collude('hunter',"The hunters are investigating.")
